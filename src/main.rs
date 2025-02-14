@@ -5,6 +5,7 @@ use std::{
 };
 
 use clap::Parser;
+use vakya_interpreter::Scanner;
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -30,7 +31,9 @@ fn run_prompt() -> Result<(), std::io::Error> {
     loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
-        println!("{}", input);
+        let mut scanner = Scanner::new(&input);
+        scanner.scan_tokens();
+        println!("{:?}", scanner);
     }
 }
 
