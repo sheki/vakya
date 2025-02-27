@@ -6,15 +6,19 @@ use std::cell::Cell;
 
 pub struct Parser<'a> {
     tokens: &'a [Token],
-    current: Cell<usize>,
+    pub current: Cell<usize>,
 }
 
 impl<'a> Parser<'a> {
-    fn new(tokens: &'a [Token]) -> Parser<'a> {
+    pub fn new(tokens: &'a [Token]) -> Parser<'a> {
         Parser {
             tokens,
             current: Cell::new(0),
         }
+    }
+
+    pub fn parse(&self) -> Result<Box<Expr>, ParserError> {
+        return self.expression();
     }
 
     fn expression(&self) -> Result<Box<Expr>, ParserError> {

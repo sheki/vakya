@@ -6,6 +6,7 @@ mod token_type;
 mod parser_error;
 
 pub use scanner::Scanner;
+pub use parser::Parser;
 
 /*
 struct Parser<'a>{

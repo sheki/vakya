@@ -33,7 +33,9 @@ fn run_prompt() -> Result<(), std::io::Error> {
         std::io::stdin().read_line(&mut input)?;
         let mut scanner = Scanner::new(&input);
         scanner.scan_tokens();
-        println!("{:?}", scanner);
+        let parser = vakya_interpreter::Parser::new(&scanner.tokens);
+        let expression = parser.parse();
+        println!("{:?}", expression);
     }
 }
 
