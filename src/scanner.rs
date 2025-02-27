@@ -1,5 +1,5 @@
 use crate::token::Token;
-use crate::token_type::{TokenType,match_keyword};
+use crate::token_type::{match_keyword, TokenType};
 
 #[derive(Debug)]
 pub struct Scanner<'a> {
