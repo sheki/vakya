@@ -5,6 +5,7 @@ use std::{
 };
 
 use clap::Parser;
+use vakya_interpreter::evaluate;
 use vakya_interpreter::Scanner;
 
 /// Search for a pattern in a file and display the lines that contain it.
@@ -35,7 +36,16 @@ fn run_prompt() -> Result<(), std::io::Error> {
         scanner.scan_tokens();
         let parser = vakya_interpreter::Parser::new(&scanner.tokens);
         let expression = parser.parse();
-        println!("{:?}", expression);
+        match expression {
+            Ok(expression) => {
+                let eval_result = evaluate(expression);
+                match eval_result {
+                    Ok(value) => println!("{:?}", value),
+                    Err(error) => println!("{:?}", error),
+                }
+            }
+            Err(error) => println!("{:?}", error),
+        }
     }
 }
 

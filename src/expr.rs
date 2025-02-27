@@ -9,7 +9,7 @@ pub enum Expr<'a> {
 }
 #[derive(Debug)]
 pub enum Value {
-    Number(String),
+    Number(f64),
     String(String),
     Boolean(bool),
     Nil,

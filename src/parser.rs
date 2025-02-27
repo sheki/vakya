@@ -1,7 +1,7 @@
 use crate::expr::{Expr, Value};
+use crate::parser_error::Error;
 use crate::token::Token;
 use crate::token_type::TokenType;
-use crate::parser_error::ParserError;
 use std::cell::Cell;
 
 pub struct Parser<'a> {
@@ -17,15 +17,15 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&self) -> Result<Box<Expr>, ParserError> {
+    pub fn parse(&self) -> Result<Box<Expr>, Error> {
         return self.expression();
     }
 
-    fn expression(&self) -> Result<Box<Expr>, ParserError> {
-        return self.equality()
+    fn expression(&self) -> Result<Box<Expr>, Error> {
+        return self.equality();
     }
 
-    fn equality(&self) -> Result<Box<Expr>, ParserError> {
+    fn equality(&self) -> Result<Box<Expr>, Error> {
         let mut expr = self.comparison()?;
         while self.match_next(TokenType::BangEqual) || self.match_next(TokenType::EqualEqual) {
             let operator = self.previous();
@@ -55,7 +55,7 @@ impl<'a> Parser<'a> {
         return true;
     }
 
-    fn comparison(&self) -> Result<Box<Expr>, ParserError> {
+    fn comparison(&self) -> Result<Box<Expr>, Error> {
         let mut expr = self.term()?;
         while self.match_next(TokenType::Greater)
             || self.match_next(TokenType::GreaterEqual)
@@ -69,17 +69,17 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn term(&self) ->Result<Box<Expr>, ParserError> {
-        let mut expr     = self.factor()?;
+    fn term(&self) -> Result<Box<Expr>, Error> {
+        let mut expr = self.factor()?;
         while self.match_next(TokenType::Minus) || self.match_next(TokenType::Plus) {
             let operator = self.previous();
-            let right =    self.factor()?;
+            let right = self.factor()?;
             expr = Box::new(Expr::Binary(expr, operator, right));
         }
-Ok(expr)
+        Ok(expr)
     }
 
-    fn factor(&self) -> Result<Box<Expr>, ParserError> {
+    fn factor(&self) -> Result<Box<Expr>, Error> {
         let mut expr: Box<Expr> = self.unary()?;
         while self.match_next(TokenType::Slash) || self.match_next(TokenType::Star) {
             let operator = self.previous();
@@ -90,7 +90,7 @@ Ok(expr)
         Ok(expr)
     }
 
-    fn unary(&self) -> Result<Box<Expr>, ParserError> {
+    fn unary(&self) -> Result<Box<Expr>, Error> {
         if self.match_next(TokenType::Minus) || self.match_next(TokenType::Bang) {
             let operator = self.previous();
             let right = self.unary()?;
@@ -99,7 +99,7 @@ Ok(expr)
         return self.primary();
     }
 
-    fn primary(&self) -> Result<Box<Expr>, ParserError> {
+    fn primary(&self) -> Result<Box<Expr>, Error> {
         if self.match_next(TokenType::False) {
             return Ok(Box::new(Expr::Literal(Value::Boolean(false))));
         }
@@ -117,7 +117,7 @@ Ok(expr)
 
         if self.match_next(TokenType::Number) {
             return Ok(Box::new(Expr::Literal(Value::Number(
-                self.previous().literal.clone(),
+                self.previous().literal.parse::<f64>().unwrap(),
             ))));
         }
 
@@ -126,7 +126,9 @@ Ok(expr)
             self.consume(TokenType::RightParen, "Expect ')' after expression.");
             return Ok(Box::new(Expr::Grouping(expr)));
         }
-        Err(ParserError::Error("No matching clause in primary".to_string()))
+        Err(Error::ParserError(
+            "No matching clause in primary".to_string(),
+        ))
     }
 
     fn consume(&self, expected: TokenType, message: &str) {
