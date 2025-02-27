@@ -3,6 +3,7 @@ mod parser;
 mod scanner;
 mod token;
 mod token_type;
+mod parser_error;
 
 pub use scanner::Scanner;
 
