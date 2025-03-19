@@ -80,10 +80,7 @@ mod tests {
             literal: "".to_string(),
             line: 1,
         };
-        let expr = Expr::Unary(
-            &token,
-            Box::new(Expr::Literal(Value::Number(42.0))),
-        );
+        let expr = Expr::Unary(&token, Box::new(Expr::Literal(Value::Number(42.0))));
         let result = evaluate(expr).unwrap();
         assert_eq!(result, Value::Number(-42.0));
     }
