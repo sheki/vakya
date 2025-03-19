@@ -105,9 +105,9 @@ impl<'a> Scanner<'a> {
                 self.line += 1;
             }
             _ => {
-                if self.peek().is_digit(10) {
+                if c.is_digit(10) {
                     self.number();
-                } else if self.peek().is_alphabetic() {
+                } else if c.is_alphabetic() {
                     self.identifier();
                 } else {
                     self.error("Unexpected character", self.line);
