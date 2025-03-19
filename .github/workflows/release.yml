@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Release ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: vakya
+            asset_name: vakya-linux-amd64
+          - os: macos-latest
+            artifact_name: vakya
+            asset_name: vakya-macos-amd64
+          - os: windows-latest
+            artifact_name: vakya.exe
+            asset_name: vakya-windows-amd64.exe
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install latest stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        
+    - name: Build
+      run: cargo build --release --verbose
+      
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/release/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
+        overwrite: true

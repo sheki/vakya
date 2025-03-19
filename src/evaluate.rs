@@ -85,3 +85,32 @@ pub fn evaluate(expr: Box<Expr>) -> Result<Value, Error> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::token::Token;
+
+    #[test]
+    fn test_evaluate_literal() {
+        let expr = Box::new(Expr::Literal(Value::Number(42.0)));
+        let result = evaluate(expr).unwrap();
+        assert_eq!(result, Value::Number(42.0));
+    }
+
+    #[test]
+    fn test_evaluate_unary_minus() {
+        let token = Token {
+            token_type: TokenType::Minus,
+            lexeme: "-".to_string(),
+            literal: "".to_string(),
+            line: 1,
+        };
+        let expr = Box::new(Expr::Unary(
+            &token,
+            Box::new(Expr::Literal(Value::Number(42.0))),
+        ));
+        let result = evaluate(expr).unwrap();
+        assert_eq!(result, Value::Number(-42.0));
+    }
+}
