@@ -20,6 +20,15 @@ A lightweight expression interpreter written in Rust. Vakya can evaluate basic m
 - Rust (stable version)
 - Cargo
 
+### Setting up Git Hooks
+
+The project includes pre-commit hooks to ensure code quality. To enable them, run:
+
+```bash
+# Set up pre-commit hooks
+git config core.hooksPath .githooks
+```
+
 ### Building and Running
 
 ```bash

@@ -1,0 +1,36 @@
+#\!/bin/sh
+#
+# Pre-commit hook to run cargo fmt and cargo clippy before allowing commit
+set -e
+
+# Check for unstaged changes to prevent loss of work
+if git diff --name-only --diff-filter=M | grep -q -E '\.rs$'; then
+    echo "Warning: You have unstaged changes to Rust files. Stash them first to avoid losing work."
+    echo "Run 'git stash -k' to stash unstaged changes while keeping staged changes."
+    exit 1
+fi
+
+# Get all staged Rust files
+STAGED_RS_FILES=$(git diff --name-only --cached --diff-filter=AM | grep -E '\.rs$' || true)
+
+if [ -z "$STAGED_RS_FILES" ]; then
+    # Silent exit if no Rust files to check
+    exit 0
+fi
+
+echo "Running cargo fmt check..."
+cargo fmt -- --check || {
+    echo "Rust code is not properly formatted\!"
+    echo "Running cargo fmt to fix formatting..."
+    cargo fmt
+    echo "Files have been formatted. Please review and stage the changes."
+    exit 1
+}
+
+echo "Running cargo clippy..."
+cargo clippy --all-targets --all-features -- -D warnings || {
+    echo "Clippy found issues. Please fix them before committing."
+    exit 1
+}
+
+echo "Pre-commit checks passed\!"

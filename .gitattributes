@@ -1,0 +1,5 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Ensure pre-commit hook has LF line endings
+.git/hooks/pre-commit text eol=lf
