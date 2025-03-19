@@ -14,10 +14,10 @@ pub struct Scanner<'a> {
     error_lines: Vec<i32>,
 }
 
-impl<'a> Scanner<'a> {
+impl Scanner<'_> {
     pub fn new(source: &str) -> Scanner {
         Scanner {
-            source: source,
+            source,
             tokens: Vec::new(),
             start: 0,
             current: 0,
@@ -105,7 +105,7 @@ impl<'a> Scanner<'a> {
                 self.line += 1;
             }
             _ => {
-                if c.is_digit(10) {
+                if c.is_ascii_digit() {
                     self.number();
                 } else if c.is_alphabetic() {
                     self.identifier();
@@ -131,7 +131,7 @@ impl<'a> Scanner<'a> {
         if self.is_at_end() {
             return '\0';
         }
-        return self.source.chars().nth(self.current).unwrap();
+        self.source.chars().nth(self.current).unwrap()
     }
 
     fn match_next(&mut self, expected: char) -> bool {
@@ -142,7 +142,7 @@ impl<'a> Scanner<'a> {
             return false;
         }
         self.current += 1;
-        return true;
+        true
     }
 
     fn advance(&mut self) -> char {
@@ -175,14 +175,14 @@ impl<'a> Scanner<'a> {
         if self.is_at_end() {
             return '\0';
         }
-        return self.source.chars().nth(self.current + 1).unwrap();
+        self.source.chars().nth(self.current + 1).unwrap()
     }
 
     fn number(&mut self) {
-        while self.peek().is_digit(10) {
+        while self.peek().is_ascii_digit() {
             self.advance();
         }
-        if self.peek() == '.' && self.peek_next().is_digit(10) {
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
             self.advance();
         }
 

@@ -59,5 +59,5 @@ fn main() -> Result<(), Box<dyn Error>> {
             run_prompt()?;
         }
     }
-    return Ok(());
+    Ok(())
 }

@@ -18,11 +18,11 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&self) -> Result<Box<Expr>, Error> {
-        return self.expression();
+        self.expression()
     }
 
     fn expression(&self) -> Result<Box<Expr>, Error> {
-        return self.equality();
+        self.equality()
     }
 
     fn equality(&self) -> Result<Box<Expr>, Error> {
@@ -52,7 +52,7 @@ impl<'a> Parser<'a> {
             return false;
         }
         self.current.set(current + 1);
-        return true;
+        true
     }
 
     fn comparison(&self) -> Result<Box<Expr>, Error> {
@@ -83,7 +83,6 @@ impl<'a> Parser<'a> {
         println!("factor {:?}", self.tokens[self.current.get()]);
         println!("factor {:?}", self.tokens);
 
-
         let mut expr: Box<Expr> = self.unary()?;
         while self.match_next(TokenType::Slash) || self.match_next(TokenType::Star) {
             let operator = self.previous();
@@ -102,7 +101,7 @@ impl<'a> Parser<'a> {
             let right = self.unary()?;
             return Ok(Box::new(Expr::Unary(operator, right)));
         }
-        return self.primary();
+        self.primary()
     }
 
     fn primary(&self) -> Result<Box<Expr>, Error> {
