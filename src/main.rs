@@ -38,7 +38,7 @@ fn run_prompt() -> Result<(), std::io::Error> {
         let expression = parser.parse();
         match expression {
             Ok(expression) => {
-                let eval_result = evaluate(expression);
+                let eval_result = evaluate(*expression);
                 match eval_result {
                     Ok(value) => println!("{:?}", value),
                     Err(error) => println!("{:?}", error),

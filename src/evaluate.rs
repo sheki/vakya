@@ -25,12 +25,12 @@ fn is_equal(right: &Value, left: &Value) -> Result<bool, Error> {
     }
 }
 
-pub fn evaluate(expr: Box<Expr>) -> Result<Value, Error> {
-    match *expr {
+pub fn evaluate(expr: Expr) -> Result<Value, Error> {
+    match expr {
         Expr::Literal(value) => Ok(value),
-        Expr::Grouping(expr) => evaluate(expr),
+        Expr::Grouping(expr) => evaluate(*expr),
         Expr::Unary(token, expr_right) => {
-            let right = evaluate(expr_right)?;
+            let right = evaluate(*expr_right)?;
             match token.token_type {
                 TokenType::Minus => match right {
                     Value::Number(num) => Ok(Value::Number(-num)),
@@ -41,8 +41,8 @@ pub fn evaluate(expr: Box<Expr>) -> Result<Value, Error> {
             }
         }
         Expr::Binary(expr_left, token, expr_right) => {
-            let left = evaluate(expr_left)?;
-            let right = evaluate(expr_right)?;
+            let left = evaluate(*expr_left)?;
+            let right = evaluate(*expr_right)?;
             match token.token_type {
                 TokenType::Plus => Ok(Value::Number(numeric(&left)? + numeric(&right)?)),
                 TokenType::Minus => Ok(Value::Number(numeric(&left)? - numeric(&right)?)),
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_evaluate_literal() {
-        let expr = Box::new(Expr::Literal(Value::Number(42.0)));
+        let expr = Expr::Literal(Value::Number(42.0));
         let result = evaluate(expr).unwrap();
         assert_eq!(result, Value::Number(42.0));
     }
@@ -80,10 +80,10 @@ mod tests {
             literal: "".to_string(),
             line: 1,
         };
-        let expr = Box::new(Expr::Unary(
+        let expr = Expr::Unary(
             &token,
             Box::new(Expr::Literal(Value::Number(42.0))),
-        ));
+        );
         let result = evaluate(expr).unwrap();
         assert_eq!(result, Value::Number(-42.0));
     }
