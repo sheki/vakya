@@ -19,11 +19,9 @@ fn is_equal(right: &Value, left: &Value) -> Result<bool, Error> {
         (Value::String(str1), Value::String(str2)) => Ok(str1 == str2),
         (Value::Boolean(bool1), Value::Boolean(bool2)) => Ok(bool1 == bool2),
         (Value::Nil, Value::Nil) => Ok(true),
-        _ => {
-            Err(Error::EvalError(
-                "Operands must be of same type".to_string(),
-            ))
-        }
+        _ => Err(Error::EvalError(
+            "Operands must be of same type".to_string(),
+        )),
     }
 }
 
@@ -46,36 +44,16 @@ pub fn evaluate(expr: Box<Expr>) -> Result<Value, Error> {
             let left = evaluate(expr_left)?;
             let right = evaluate(expr_right)?;
             match token.token_type {
-                TokenType::Plus => {
-                    Ok(Value::Number(numeric(&left)? + numeric(&right)?))
-                }
-                TokenType::Minus => {
-                    Ok(Value::Number(numeric(&left)? - numeric(&right)?))
-                }
-                TokenType::Star => {
-                    Ok(Value::Number(numeric(&left)? * numeric(&right)?))
-                }
-                TokenType::Slash => {
-                    Ok(Value::Number(numeric(&left)? / numeric(&right)?))
-                }
-                TokenType::Greater => {
-                    Ok(Value::Boolean(numeric(&left)? > numeric(&right)?))
-                }
-                TokenType::GreaterEqual => {
-                    Ok(Value::Boolean(numeric(&left)? >= numeric(&right)?))
-                }
-                TokenType::Less => {
-                    Ok(Value::Boolean(numeric(&left)? < numeric(&right)?))
-                }
-                TokenType::LessEqual => {
-                    Ok(Value::Boolean(numeric(&left)? <= numeric(&right)?))
-                }
-                TokenType::BangEqual => {
-                    Ok(Value::Boolean(!is_equal(&left, &right)?))
-                }
-                TokenType::EqualEqual => {
-                    Ok(Value::Boolean(is_equal(&left, &right)?))
-                }
+                TokenType::Plus => Ok(Value::Number(numeric(&left)? + numeric(&right)?)),
+                TokenType::Minus => Ok(Value::Number(numeric(&left)? - numeric(&right)?)),
+                TokenType::Star => Ok(Value::Number(numeric(&left)? * numeric(&right)?)),
+                TokenType::Slash => Ok(Value::Number(numeric(&left)? / numeric(&right)?)),
+                TokenType::Greater => Ok(Value::Boolean(numeric(&left)? > numeric(&right)?)),
+                TokenType::GreaterEqual => Ok(Value::Boolean(numeric(&left)? >= numeric(&right)?)),
+                TokenType::Less => Ok(Value::Boolean(numeric(&left)? < numeric(&right)?)),
+                TokenType::LessEqual => Ok(Value::Boolean(numeric(&left)? <= numeric(&right)?)),
+                TokenType::BangEqual => Ok(Value::Boolean(!is_equal(&left, &right)?)),
+                TokenType::EqualEqual => Ok(Value::Boolean(is_equal(&left, &right)?)),
                 _ => Err(Error::EvalError("Unknown operator".to_string())),
             }
         }
