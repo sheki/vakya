@@ -80,9 +80,6 @@ impl<'a> Parser<'a> {
     }
 
     fn factor(&self) -> Result<Box<Expr>, Error> {
-        println!("factor {:?}", self.tokens[self.current.get()]);
-        println!("factor {:?}", self.tokens);
-
         let mut expr: Box<Expr> = self.unary()?;
         while self.match_next(TokenType::Slash) || self.match_next(TokenType::Star) {
             let operator = self.previous();
@@ -94,8 +91,6 @@ impl<'a> Parser<'a> {
     }
 
     fn unary(&self) -> Result<Box<Expr>, Error> {
-        println!("unary {:?}", self.tokens[self.current.get()]);
-
         if self.match_next(TokenType::Minus) || self.match_next(TokenType::Bang) {
             let operator = self.previous();
             let right = self.unary()?;
@@ -105,7 +100,6 @@ impl<'a> Parser<'a> {
     }
 
     fn primary(&self) -> Result<Box<Expr>, Error> {
-        println!("primary {:?}", self.tokens[self.current.get()]);
         if self.match_next(TokenType::False) {
             return Ok(Box::new(Expr::Literal(Value::Boolean(false))));
         }

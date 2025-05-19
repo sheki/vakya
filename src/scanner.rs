@@ -61,11 +61,13 @@ impl Scanner<'_> {
             '+' => self.add_token(TokenType::Plus),
             ';' => self.add_token(TokenType::SemiColon),
             '/' => {
+                // Special handling for slash as comments start with slash.
                 if !self.match_next('/') {
                     self.add_token(TokenType::Slash)
-                }
-                while self.peek() != '\n' && !self.is_at_end() {
-                    self.advance();
+                } else {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
                 }
             }
             '*' => self.add_token(TokenType::Star),
