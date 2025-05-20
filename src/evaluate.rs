@@ -64,11 +64,13 @@ pub fn evaluate(expr: Expr) -> Result<Value, Error> {
 pub fn evaluate_stmt(stmt: Stmt) -> Result<(), Error> {
     match stmt {
         Stmt::ExprStmt(expr) => {
-            println!("(missing print) {:?}", evaluate(*expr)?);
+            // Evaluate the expression but don't print the result
+            evaluate(*expr)?;
             Ok(())
         }
         Stmt::PrintStmt(expr) => {
-            println!("> {:?}", evaluate(*expr)?);
+            // Print the result of evaluating the expression
+            println!("{:?}", evaluate(*expr)?);
             Ok(())
         }
     }

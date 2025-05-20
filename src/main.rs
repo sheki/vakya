@@ -16,23 +16,35 @@ struct Cli {
 fn run_file(path: std::path::PathBuf) -> Result<(), std::io::Error> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
+    let mut source = String::new();
     for line in reader.lines() {
         match line {
             Ok(line) => {
-                println!("{}", line);
+                source.push_str(&line);
+                source.push('\n');
             }
             Err(e) => return Err(e),
         }
     }
+
+    let mut scanner = Scanner::new(&source);
+    scanner.scan_tokens();
+    let parser = vakya_interpreter::Parser::new(&scanner.tokens);
+    let res = parser.parse();
+
+    match res {
+        Ok(statements) => interpret(statements),
+        Err(error) => println!("error: {:?}", error),
+    }
+
     Ok(())
 }
 
 fn interpret(statements: Vec<Stmt>) {
     for stmt in statements {
         let eval_result = evaluate_stmt(stmt);
-        match eval_result {
-            Ok(value) => println!("{:?}", value),
-            Err(error) => println!("error: {:?}", error),
+        if let Err(error) = eval_result {
+            println!("error: {:?}", error);
         }
     }
 }
