@@ -1,5 +1,6 @@
 use crate::expr::{Expr, Value};
 use crate::parser_error::Error;
+use crate::stmt::Stmt;
 use crate::token::Token;
 use crate::token_type::TokenType;
 use std::cell::Cell;
@@ -17,8 +18,33 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&self) -> Result<Box<Expr>, Error> {
-        self.expression()
+    pub fn parse(&self) -> Result<Vec<Stmt>, Error> {
+        let mut statments = Vec::new();
+        // the last token is ";" so do not consume it.
+        while self.current.get() < self.tokens.len() - 1 {
+            let stmt = self.statement()?;
+            statments.push(stmt);
+        }
+        Ok(statments)
+    }
+
+    fn statement(&self) -> Result<Stmt, Error> {
+        if self.match_next(TokenType::Print) {
+            return self.print_statement();
+        }
+        self.expression_statement()
+    }
+
+    fn expression_statement(&self) -> Result<Stmt, Error> {
+        let expr = self.expression()?;
+        self.consume(TokenType::SemiColon, "Expect ';' after value.");
+        Ok(Stmt::ExprStmt(expr))
+    }
+
+    fn print_statement(&self) -> Result<Stmt, Error> {
+        let expr = self.expression()?;
+        self.consume(TokenType::SemiColon, "Expect ';' after value.");
+        Ok(Stmt::PrintStmt(expr))
     }
 
     fn expression(&self) -> Result<Box<Expr>, Error> {

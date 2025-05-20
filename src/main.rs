@@ -5,8 +5,7 @@ use std::{
 };
 
 use clap::Parser;
-use vakya_interpreter::evaluate;
-use vakya_interpreter::Scanner;
+use vakya_interpreter::{evaluate_stmt, Scanner, Stmt};
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -28,23 +27,29 @@ fn run_file(path: std::path::PathBuf) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+fn interpret(statements: Vec<Stmt>) {
+    for stmt in statements {
+        let eval_result = evaluate_stmt(stmt);
+        match eval_result {
+            Ok(value) => println!("{:?}", value),
+            Err(error) => println!("error: {:?}", error),
+        }
+    }
+}
+
 fn run_prompt() -> Result<(), std::io::Error> {
     loop {
+        println!("> ");
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
         let mut scanner = Scanner::new(&input);
         scanner.scan_tokens();
         let parser = vakya_interpreter::Parser::new(&scanner.tokens);
-        let expression = parser.parse();
-        match expression {
-            Ok(expression) => {
-                let eval_result = evaluate(*expression);
-                match eval_result {
-                    Ok(value) => println!("{:?}", value),
-                    Err(error) => println!("{:?}", error),
-                }
-            }
-            Err(error) => println!("{:?}", error),
+        let res = parser.parse();
+
+        match res {
+            Ok(statements) => interpret(statements),
+            Err(error) => println!("error: {:?}", error),
         }
     }
 }
@@ -52,12 +57,8 @@ fn run_prompt() -> Result<(), std::io::Error> {
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
     match args.path {
-        Some(path) => {
-            run_file(path)?;
-        }
-        None => {
-            run_prompt()?;
-        }
+        Some(path) => run_file(path)?,
+        None => run_prompt()?,
     }
     Ok(())
 }

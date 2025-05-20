@@ -1,5 +1,6 @@
 use crate::expr::{Expr, Value};
 use crate::parser_error::Error;
+use crate::stmt::Stmt;
 use crate::token_type::TokenType;
 
 fn is_truthy(value: Value) -> bool {
@@ -56,6 +57,19 @@ pub fn evaluate(expr: Expr) -> Result<Value, Error> {
                 TokenType::EqualEqual => Ok(Value::Boolean(is_equal(&left, &right)?)),
                 _ => Err(Error::EvalError("Unknown operator".to_string())),
             }
+        }
+    }
+}
+
+pub fn evaluate_stmt(stmt: Stmt) -> Result<(), Error> {
+    match stmt {
+        Stmt::ExprStmt(expr) => {
+            println!("(missing print) {:?}", evaluate(*expr)?);
+            Ok(())
+        }
+        Stmt::PrintStmt(expr) => {
+            println!("> {:?}", evaluate(*expr)?);
+            Ok(())
         }
     }
 }
