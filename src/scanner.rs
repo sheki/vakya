@@ -199,11 +199,21 @@ impl Scanner<'_> {
             if self.peek() == '\n' {
                 self.line += 1;
             }
-            if self.is_at_end() {
-                self.error("Unterminated string", self.line);
-                return;
-            }
             self.advance();
         }
+
+        if self.is_at_end() {
+            self.error("Unterminated string", self.line);
+            return;
+        }
+
+        // Consume the closing quote
+        self.advance();
+
+        // Extract the string value (without the quotes)
+        let value = self.source[(self.start + 1)..(self.current - 1)].to_string();
+
+        // Add the string token
+        self.add_token_and_literal(TokenType::String, value);
     }
 }
