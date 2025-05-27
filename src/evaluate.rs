@@ -1,9 +1,9 @@
+use crate::env::Env;
 use crate::expr::{Expr, Value};
 use crate::parser_error::Error;
-use crate::stmt::Stmt;
 use crate::token_type::TokenType;
 
-fn is_truthy(value: Value) -> bool {
+fn is_truthy(value: &Value) -> bool {
     !matches!(value, Value::Nil | Value::Boolean(false))
 }
 
@@ -26,24 +26,24 @@ fn is_equal(right: &Value, left: &Value) -> Result<bool, Error> {
     }
 }
 
-pub fn evaluate(expr: Expr) -> Result<Value, Error> {
+pub fn evaluate<'a>(expr: Expr<'a>, env: &'a Env) -> Result<Value, Error> {
     match expr {
         Expr::Literal(value) => Ok(value),
-        Expr::Grouping(expr) => evaluate(*expr),
+        Expr::Grouping(expr) => evaluate(*expr, env),
         Expr::Unary(token, expr_right) => {
-            let right = evaluate(*expr_right)?;
+            let right = evaluate(*expr_right, env)?;
             match token.token_type {
                 TokenType::Minus => match right {
                     Value::Number(num) => Ok(Value::Number(-num)),
                     _ => Err(Error::EvalError("Operand must be a number".to_string())),
                 },
-                TokenType::Bang => Ok(Value::Boolean(!is_truthy(right))),
+                TokenType::Bang => Ok(Value::Boolean(!is_truthy(&right))),
                 _ => Err(Error::EvalError("Unknown operator".to_string())),
             }
         }
         Expr::Binary(expr_left, token, expr_right) => {
-            let left = evaluate(*expr_left)?;
-            let right = evaluate(*expr_right)?;
+            let left = evaluate(*expr_left, env)?;
+            let right = evaluate(*expr_right, env)?;
             match token.token_type {
                 TokenType::Plus => Ok(Value::Number(numeric(&left)? + numeric(&right)?)),
                 TokenType::Minus => Ok(Value::Number(numeric(&left)? - numeric(&right)?)),
@@ -58,20 +58,14 @@ pub fn evaluate(expr: Expr) -> Result<Value, Error> {
                 _ => Err(Error::EvalError("Unknown operator".to_string())),
             }
         }
-    }
-}
-
-pub fn evaluate_stmt(stmt: Stmt) -> Result<(), Error> {
-    match stmt {
-        Stmt::ExprStmt(expr) => {
-            // Evaluate the expression but don't print the result
-            evaluate(*expr)?;
-            Ok(())
-        }
-        Stmt::PrintStmt(expr) => {
-            // Print the result of evaluating the expression
-            println!("{:?}", evaluate(*expr)?);
-            Ok(())
+        Expr::Variable(name_token_ref) => {
+            let name = &name_token_ref.lexeme;
+            if let Some(value_ref) = env.get(name) {
+                // TODO fix clone
+                Ok(value_ref.clone())
+            } else {
+                Err(Error::EvalError(format!("Undefined variable '{}'", name)))
+            }
         }
     }
 }
@@ -84,7 +78,7 @@ mod tests {
     #[test]
     fn test_evaluate_literal() {
         let expr = Expr::Literal(Value::Number(42.0));
-        let result = evaluate(expr).unwrap();
+        let result = evaluate(expr, &Env::new()).unwrap();
         assert_eq!(result, Value::Number(42.0));
     }
 
@@ -97,7 +91,7 @@ mod tests {
             line: 1,
         };
         let expr = Expr::Unary(&token, Box::new(Expr::Literal(Value::Number(42.0))));
-        let result = evaluate(expr).unwrap();
+        let result = evaluate(expr, &Env::new()).unwrap();
         assert_eq!(result, Value::Number(-42.0));
     }
 }

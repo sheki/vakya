@@ -5,7 +5,7 @@ use std::{
 };
 
 use clap::Parser;
-use vakya_interpreter::{evaluate_stmt, Scanner, Stmt};
+use vakya_interpreter::{Interpreter, Scanner};
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -31,25 +31,18 @@ fn run_file(path: std::path::PathBuf) -> Result<(), std::io::Error> {
     scanner.scan_tokens();
     let parser = vakya_interpreter::Parser::new(&scanner.tokens);
     let res = parser.parse();
+    let mut interpreter = Interpreter::new();
 
     match res {
-        Ok(statements) => interpret(statements),
+        Ok(statements) => interpreter.interpret(statements),
         Err(error) => println!("error: {:?}", error),
     }
 
     Ok(())
 }
 
-fn interpret(statements: Vec<Stmt>) {
-    for stmt in statements {
-        let eval_result = evaluate_stmt(stmt);
-        if let Err(error) = eval_result {
-            println!("error: {:?}", error);
-        }
-    }
-}
-
 fn run_prompt() -> Result<(), std::io::Error> {
+    let mut interpreter = Interpreter::new();
     loop {
         println!("> ");
         let mut input = String::new();
@@ -60,7 +53,7 @@ fn run_prompt() -> Result<(), std::io::Error> {
         let res = parser.parse();
 
         match res {
-            Ok(statements) => interpret(statements),
+            Ok(statements) => interpreter.interpret(statements),
             Err(error) => println!("error: {:?}", error),
         }
     }

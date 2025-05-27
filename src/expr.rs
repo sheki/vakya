@@ -6,8 +6,9 @@ pub enum Expr<'a> {
     Grouping(Box<Expr<'a>>),
     Literal(Value),
     Unary(&'a Token, Box<Expr<'a>>),
+    Variable(&'a Token),
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Value {
     Number(f64),
     String(String),

@@ -22,10 +22,31 @@ impl<'a> Parser<'a> {
         let mut statments = Vec::new();
         // the last token is ";" so do not consume it.
         while self.current.get() < self.tokens.len() - 1 {
-            let stmt = self.statement()?;
+            let stmt = self.declaration()?;
             statments.push(stmt);
         }
         Ok(statments)
+    }
+
+    fn declaration(&self) -> Result<Stmt, Error> {
+        if self.match_next(TokenType::Var) {
+            return self.var_declaration();
+        }
+        self.statement()
+    }
+
+    fn var_declaration(&self) -> Result<Stmt, Error> {
+        let name = self.consume(TokenType::Identifier, "Expect variable name.");
+        let initializer = if self.match_next(TokenType::Equal) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+        self.consume(
+            TokenType::SemiColon,
+            "Expect ';' after variable declaration.",
+        );
+        Ok(Stmt::VarStmt(name, initializer))
     }
 
     fn statement(&self) -> Result<Stmt, Error> {
@@ -146,6 +167,9 @@ impl<'a> Parser<'a> {
                 self.previous().literal.parse::<f64>().unwrap(),
             ))));
         }
+        if self.match_next(TokenType::Identifier) {
+            return Ok(Box::new(Expr::Variable(self.previous())));
+        }
 
         if self.match_next(TokenType::LeftParen) {
             let expr = self.expression()?;
@@ -157,7 +181,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn consume(&self, expected: TokenType, message: &str) {
+    fn consume(&self, expected: TokenType, message: &str) -> &Token {
         let current = self.current.get();
         if current >= self.tokens.len() {
             panic!("error ${message}")
@@ -168,6 +192,8 @@ impl<'a> Parser<'a> {
         if self.tokens[current].token_type != expected {
             panic!("error ${message}")
         }
+        let token = &self.tokens[current];
         self.current.set(current + 1);
+        token
     }
 }
